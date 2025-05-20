@@ -1,50 +1,101 @@
-# Welcome to your Expo app 👋
+# Virro
+Virro is a full-stack productivity and habit-building app that rewards task completion and accountability through a verification system. It was built from the ground up using a custom backend with Node.js, PostgreSQL, JWT-based authentication, and a React Native frontend powered by Expo.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+>  Designed, built, and maintained solely by Pavlo Vovk
 
-## Get started
+---
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- ✅ User registration and login with hashed passwords
+- 🔐 Secure JWT-based authentication
+- 🧑‍⚖ Verifier roles with restricted access
+- 📋 Task creation, completion, and submission for approval
+- 👥 Group task support with member tracking
+- 📅 Calendar-friendly API structure
+- 🔄 Role-switching: any user can become a verifier
+- 🔧 Built with scalability and flexibility in mind
 
-2. Start the app
+---
 
-   ```bash
-    npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+| Layer          | Tech                      |
+|----------------|---------------------------|
+| Backend        | Node.js, Express          |
+| Database       | PostgreSQL, pg            |
+| Auth           | JWT, bcryptjs             |
+| Dev Tools      | TypeScript, ts-node-dev   |
+| Mobile Frontend| React Native + Expo Go    |
+| API Testing    | Postman                   |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Project Structure
 
-## Get a fresh project
+app/
+├── client/ # React Native frontend (Expo)
+├── server/ # Express API backend
+│ ├── controllers/ # Route logic
+│ ├── routes/ # API routes
+│ ├── middleware/ # Auth & role middleware
+│ ├── models/ # DB connection
+│ ├── utils/ # Token helpers, etc.
+│ ├── .env # Environment config (not committed)
+│ └── index.ts # Server entry point
 
-When you're ready, run:
+---
+
+## Setup Instructions
+
+### 1. Clone the Repo
 
 ```bash
-npm run reset-project
-```
+git clone https://github.com/your-username/Virro-Clean.git
+cd Virro-Clean/app/server
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**### 2. Create .env File**
 
-## Learn more
+DATABASE_URL=postgres://postgres:your_password@localhost:5432/virro_db
+JWT_SECRET=your_jwt_secret
 
-To learn more about developing your project with Expo, look at the following resources:
+**### 3. Install Dependencies
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
 
-## Join the community
+**### Start the backend Server
 
-Join our community of developers creating universal apps.
+```bash
+npm run dev
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+(Server will run on http://localhost:3001)
+
+---
+
+**## API Endpoints**
+
+| Method | Route                     | Description                |
+| ------ | ------------------------- | -------------------------- |
+| POST   | `/auth/register`          | Register a new user        |
+| POST   | `/auth/login`             | Login and receive token    |
+| PATCH  | `/auth/role`              | Switch to verifier role    |
+| GET    | `/tasks`                  | Get user tasks             |
+| POST   | `/tasks`                  | Create a new task          |
+| GET    | `/verify/pending`         | Verifier: view submissions |
+| POST   | `/verify/:taskId/approve` | Verifier: approve task     |
+All protected routes require a Bearer token.
+
+---
+
+**##License**
+This project is under the MIT License.
+Feel free to fork it for learning or inspiration — but attribution is appreciated.
+
+---
+
+**##Contact**
+For questions, feedback, or collaboration opportunities
+Email: pavlovovk1@gmail.vom
+Github: github.com/PavloVovk2002
+
