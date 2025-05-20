@@ -22,6 +22,9 @@
     "@react-navigation/native": "^7.1.5",
     "@react-navigation/native-stack": "^7.3.9",
     "@supabase/supabase-js": "^2.49.4",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "expo": "^52.0.46",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.8",
@@ -35,6 +38,9 @@
     "expo-symbols": "~0.2.2",
     "expo-system-ui": "~4.0.9",
     "expo-web-browser": "~14.0.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
@@ -52,13 +58,32 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
     "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.19",
+    "@types/pg": "^8.15.2",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "jest": "^29.2.1",
     "jest-expo": "~52.0.6",
     "react-test-renderer": "18.3.1",
-    "typescript": "^5.3.3"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
   },
-  "private": true
+  "private": true,
+  "description": "This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PavloVovk2002/Virro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PavloVovk2002/Virro/issues"
+  },
+  "homepage": "https://github.com/PavloVovk2002/Virro#readme"
 }
