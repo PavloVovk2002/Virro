@@ -1,5 +1,3 @@
-// /app/(tabs)/profile/index.tsx
-
 import React from 'react';
 import {
   View,
