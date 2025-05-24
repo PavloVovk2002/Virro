@@ -15,8 +15,13 @@ export const register = async (req: Request, res: Response) => {
     );
 
     res.status(201).json(user.rows[0]);
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    if (err.code === '23505') {
+      // PostgreSQL unique constraint violation
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    console.error('Registration error:', err);
     res.status(500).json({ message: 'Error registering user' });
   }
 };
@@ -45,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed' });
   }
 };
@@ -61,7 +66,7 @@ export const switchRole = async (req: Request, res: Response) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('Switch role error:', err);
     res.status(500).json({ message: 'Could not switch role' });
   }
 };

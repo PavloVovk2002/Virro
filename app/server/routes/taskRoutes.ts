@@ -1,19 +1,20 @@
 import express from 'express';
-import{
+import {
   createTask,
   getUserTasks,
-  updateTask,
-  deleteTask
+  deleteTask,
+  submitTask
 } from '../controllers/taskController';
 import { authenticate } from '../middleware/authMiddleware';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 
 router.use(authenticate);
 
-router.post('/', createTask);
-router.get('/', getUserTasks);
-router.put('/:taskId', updateTask);
-router.delete('/:taskId', deleteTask);
+router.get('/', asyncHandler(getUserTasks));
+router.post('/', asyncHandler(createTask));
+router.patch('/:id/submit', asyncHandler(submitTask));
+router.delete('/:id', asyncHandler(deleteTask));
 
 export default router;

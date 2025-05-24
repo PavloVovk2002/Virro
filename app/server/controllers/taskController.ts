@@ -9,12 +9,12 @@ export const createTask = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
       'INSERT INTO tasks (user_id, title, due_date, description) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, title, due_date, description]
+      [userId, title, due_date, description || null]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('Create task error:', err);
     res.status(500).json({ message: 'Error creating task' });
   }
 };
@@ -31,44 +31,54 @@ export const getUserTasks = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error retrieving tasks' });
+    console.error('Get tasks error:', err);
+    res.status(500).json({ message: 'Error fetching tasks' });
   }
 };
 
-// Update a task
-export const updateTask = async (req: Request, res: Response) => {
+// Submit task for verification (completed = true)
+export const submitTask = async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
-  const { taskId } = req.params;
-  const { title, due_date, description, completed } = req.body;
+  const { id } = req.params;
 
   try {
     const result = await pool.query(
-      'UPDATE tasks SET title = $1, due_date = $2, description = $3, completed = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
-      [title, due_date, description, completed, taskId, userId]
+      `UPDATE tasks
+       SET completed = true
+       WHERE id = $1 AND user_id = $2 AND completed = false
+       RETURNING *`,
+      [id, userId]
     );
+
+    if (!result.rows.length) {
+      return res.status(400).json({ message: 'Task not found or already submitted' });
+    }
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error updating task' });
+    console.error('Submit task error:', err);
+    res.status(500).json({ message: 'Error submitting task' });
   }
 };
 
 // Delete a task
 export const deleteTask = async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
-  const { taskId } = req.params;
+  const { id } = req.params;
 
   try {
-    await pool.query(
-      'DELETE FROM tasks WHERE id = $1 AND user_id = $2',
-      [taskId, userId]
+    const result = await pool.query(
+      `DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [id, userId]
     );
 
-    res.status(204).send();
+    if (!result.rows.length) {
+      return res.status(404).json({ message: 'Task not found or already deleted' });
+    }
+
+    res.json({ message: 'Task deleted successfully' });
   } catch (err) {
-    console.error(err);
+    console.error('Delete task error:', err);
     res.status(500).json({ message: 'Error deleting task' });
   }
 };

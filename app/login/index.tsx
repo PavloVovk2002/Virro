@@ -1,59 +1,80 @@
-import { useState } from 'react';
-import { ActivityIndicator } from 'react-native';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useFonts, Baloo2_600SemiBold, Baloo2_700Bold } from '@expo-google-fonts/baloo-2';
-import { supabase } from '../../config/supabase';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     Baloo2_600SemiBold,
     Baloo2_700Bold,
   });
 
-if (!fontsLoaded) {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#2dbd20" />
-    </View>
-  );
-}
-
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#2dbd20" />
+      </View>
+    );
+  }
 
   const handleSignIn = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    try {
+      const response = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      alert('Login failed: ' + error.message);
-    } else {
-      router.replace('/tabs/home');
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok && data.token) {
+        login(data.token); // ✅ Save to SecureStore + context
+        router.replace('/tabs/home');
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Login error:', error);
+      alert('Something went wrong.');
     }
   };
 
   const handleRegister = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
-    setLoading(false);
+    try {
+      const response = await fetch('http://localhost:3001/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      alert('Registration failed: ' + error.message);
-    } else {
-      alert('Success! Please check your email.');
-      router.replace('/tabs/home');
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok) {
+        alert('Registration successful! You can now log in.');
+      } else {
+        alert(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Registration error:', error);
+      alert('Something went wrong.');
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* REPLACEMENT FOR LOGO */}
       <Text style={styles.title}>Virro</Text>
 
       <TextInput
@@ -79,7 +100,11 @@ if (!fontsLoaded) {
         <Text style={styles.buttonText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.registerButton]} onPress={handleRegister} disabled={loading}>
+      <TouchableOpacity
+        style={[styles.button, styles.registerButton]}
+        onPress={handleRegister}
+        disabled={loading}
+      >
         <Text style={styles.buttonText}>{loading ? 'Registering...' : 'Register'}</Text>
       </TouchableOpacity>
     </View>
