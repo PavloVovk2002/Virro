@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as jwtDecodeModule from 'jwt-decode';
 
-const jwtDecode = jwtDecodeModule.default as unknown as <T>(token: string) => T;
 
 type DecodedToken = {
   userId: number;
