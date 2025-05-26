@@ -7,7 +7,6 @@ import {
   ImageBackground,
   Modal,
   Pressable,
-  Animated,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -123,10 +122,12 @@ export default function CalendarScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Day Labels */}
+        {/* ✅ FIXED Day Labels */}
         <View style={styles.daysRow}>
-          {DAYS.map(day => (
-            <Text key={day} style={styles.dayLabel}>{day}</Text>
+          {DAYS.map((day, index) => (
+            <Text key={`${day}-${index}`} style={styles.dayLabel}>
+              {day}
+            </Text>
           ))}
         </View>
 
@@ -168,9 +169,8 @@ export default function CalendarScreen() {
         ))}
       </View>
 
-      {/* Bottom Half with Image Background */}
+      {/* Bottom Section */}
       <ImageBackground source={background} style={styles.bottomBackground}>
-        {/* Tabs */}
         <View style={styles.tabs}>
           {['All', 'Schedule', 'News'].map(tab => (
             <TouchableOpacity
@@ -185,7 +185,6 @@ export default function CalendarScreen() {
           ))}
         </View>
 
-        {/* Dynamic Content Based on Tab */}
         <View style={styles.contentBox}>{renderContent()}</View>
       </ImageBackground>
 
@@ -277,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tab: {
-  flex: 1,
+    flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 12,
     alignItems: 'center',

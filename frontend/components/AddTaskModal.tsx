@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
 import {
   Modal,
   View,
@@ -9,36 +8,43 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+  Pressable,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 
-
-export default function AddTaskScreen() {
+export default function AddTaskModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const router = useRouter();
   const [task, setTask] = useState('');
   const [group, setGroup] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const handleClose = () => {
-    router.back(); // close modal
+  const handleSubmit = async () => {
+    try {
+      await fetch('http://localhost:3001/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: task, group, dueDate, completed: false }),
+      });
+
+      setTask('');
+      setGroup('');
+      setDueDate('');
+
+      onClose(); // close modal
+      router.replace('/tabs/tasks'); // redirect
+    } catch (error) {
+      console.error('Error submitting task:', error);
+    }
   };
 
-  const handleSubmit = () => {
-    console.log('Task submitted:', { task, group, dueDate });
-    // TODO: Send to Supabase
-    handleClose();
-  };
-
-return (
-  <Modal transparent animationType="fade">
-    <TouchableWithoutFeedback onPress={handleClose}>
-      <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={() => {}}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modal}
-          >
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalWrapper}
+        >
+          <Pressable style={styles.modal} onPress={() => {}}>
             <Text style={styles.title}>Create New Task</Text>
 
             <TextInput
@@ -66,11 +72,10 @@ return (
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
               <Text style={styles.submitText}>Add Task</Text>
             </TouchableOpacity>
-          </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
-      </View>
-    </TouchableWithoutFeedback>
-  </Modal>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -81,13 +86,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
   modal: {
     width: '85%',
     backgroundColor: '#fff',
     borderRadius: 20,
     paddingTop: 24,
     paddingHorizontal: 24,
-    paddingBottom: 200,
+    paddingBottom: 40,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.2,
@@ -125,10 +136,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  cancelText: {
-    marginTop: 16,
-    color: '#aaa',
-    fontSize: 14,
-  },
 });
-

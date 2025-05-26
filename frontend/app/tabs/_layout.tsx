@@ -1,12 +1,15 @@
 import { Tabs } from 'expo-router';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { AuthProvider } from './context/AuthContext';
+import React, { useState } from 'react';
+import { AuthProvider } from '../context/AuthContext';
+import AddTaskModal from '@/components/AddTaskModal'; 
 
 const PRIMARY_COLOR = '#5D8748';
 
 export default function Layout() {
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <AuthProvider>
       <Tabs
@@ -35,12 +38,7 @@ export default function Layout() {
           name="home/index"
           options={{
             tabBarIcon: () => (
-              <Ionicons
-                name="home-outline"
-                size={28}
-                color={PRIMARY_COLOR}
-                style={{ marginBottom: -40 }}
-              />
+              <Ionicons name="home-outline" size={28} color={PRIMARY_COLOR} />
             ),
           }}
         />
@@ -49,23 +47,21 @@ export default function Layout() {
           name="tasks/index"
           options={{
             tabBarIcon: () => (
-              <Ionicons
-                name="checkmark-done-outline"
-                size={28}
-                color={PRIMARY_COLOR}
-                style={{ marginBottom: -40 }}
-              />
+              <Ionicons name="checkmark-done-outline" size={28} color={PRIMARY_COLOR} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name="add-task"
+          name="add-placeholder"
           options={{
             tabBarIcon: () => (
-              <View style={styles.addButton}>
+              <TouchableOpacity
+                onPress={() => setModalVisible(true)}
+                style={styles.addButton}
+              >
                 <Ionicons name="add" size={32} color="#fff" />
-              </View>
+              </TouchableOpacity>
             ),
           }}
         />
@@ -74,12 +70,7 @@ export default function Layout() {
           name="calendar/index"
           options={{
             tabBarIcon: () => (
-              <Ionicons
-                name="calendar-outline"
-                size={28}
-                color={PRIMARY_COLOR}
-                style={{ marginBottom: -40 }}
-              />
+              <Ionicons name="calendar-outline" size={28} color={PRIMARY_COLOR} />
             ),
           }}
         />
@@ -88,16 +79,13 @@ export default function Layout() {
           name="profile/index"
           options={{
             tabBarIcon: () => (
-              <Ionicons
-                name="person-outline"
-                size={28}
-                color={PRIMARY_COLOR}
-                style={{ marginBottom: -40 }}
-              />
+              <Ionicons name="person-outline" size={28} color={PRIMARY_COLOR} />
             ),
           }}
         />
       </Tabs>
+
+      <AddTaskModal visible={modalVisible} onClose={() => setModalVisible(false)} />
     </AuthProvider>
   );
 }

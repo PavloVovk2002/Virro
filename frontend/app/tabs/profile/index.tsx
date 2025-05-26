@@ -1,5 +1,3 @@
-// /app/(tabs)/profile/index.tsx
-
 import React from 'react';
 import {
   View,
@@ -51,7 +49,9 @@ export default function ProfileScreen() {
               />
               <View>
                 <Text style={styles.profileName}>{email ?? 'Unknown User'}</Text>
-                <Text style={styles.profileRole}>{(role ?? 'unknown').charAt(0).toUpperCase() + (role ?? 'unknown').slice(1)}</Text>
+                <Text style={styles.profileRole}>
+                  {(role ?? 'unknown').charAt(0).toUpperCase() + (role ?? 'unknown').slice(1)}
+                </Text>
               </View>
             </View>
 
@@ -77,14 +77,14 @@ export default function ProfileScreen() {
 
             {/* Color options */}
             <View style={styles.colorRow}>
-              {['#5d8748', '#467c8d', '#84487c', '#90503a', '#6e6b2b'].map((color, index) => (
-                <TouchableOpacity key={index} style={[styles.colorDot, { backgroundColor: color }]} />
+              {['#5d8748', '#467c8d', '#84487c', '#90503a', '#6e6b2b'].map((color) => (
+                <TouchableOpacity key={color} style={[styles.colorDot, { backgroundColor: color }]} />
               ))}
             </View>
 
             <View style={styles.colorRow}>
-              {['#c6d6c2', '#8fabc0', '#b09cb4', '#b38d7c', '#bfbf92'].map((color, index) => (
-                <TouchableOpacity key={index} style={[styles.colorDot, { backgroundColor: color }]} />
+              {['#c6d6c2', '#8fabc0', '#b09cb4', '#b38d7c', '#bfbf92'].map((color) => (
+                <TouchableOpacity key={color} style={[styles.colorDot, { backgroundColor: color }]} />
               ))}
             </View>
 
@@ -92,10 +92,10 @@ export default function ProfileScreen() {
 
             {/* Layout thumbnails */}
             <View style={styles.layoutRow}>
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <TouchableOpacity key={i} style={styles.layoutBox}>
                   <Image
-                    source={{ uri: 'https://via.placeholder.com/60x80' }}
+                    source={{ uri: `https://via.placeholder.com/60x80?i=${i}` }} // ✅ Unique image URIs
                     style={styles.layoutImage}
                   />
                 </TouchableOpacity>
