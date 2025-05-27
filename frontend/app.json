@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "Virro",
+    "slug": "virro-frontend",
+    "version": "1.0.0",
+    "sdkVersion": "53.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon1024.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "extra": {
+      "eas": {
+        "projectId": "e3a8c096-dea6-4100-912e-c9fc098cb245"
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "userInterfaceStyle": "light",
+      "bundleIdentifier": "com.pavlovovk.virro",
+      "statusBar": {
+        "barStyle": "light-content",
+        "backgroundColor": "#3f5c2e"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.pavlovovk.virro",
+      "icon": "./assets/images/icon1024.png",
+      "statusBar": {
+        "backgroundColor": "#3f5c2e",
+        "translucent": true,
+        "barStyle": "light-content"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon1024.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-font",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "pavlovovk"
+  }
+}

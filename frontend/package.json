@@ -36,7 +36,8 @@
     "react-native-svg": "15.11.2",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-web": "^0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "expo-dev-client": "~5.1.8"
   },
   "devDependencies": {
     "@types/jwt-decode": "^2.2.1",
