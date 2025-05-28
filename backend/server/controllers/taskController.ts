@@ -1,18 +1,33 @@
 import { Request, Response } from 'express';
 import pool from '../models/db';
+import moment from 'moment';
 
-// Create a new task
+// Create a new task (handles repeatDays)
 export const createTask = async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
-  const { title, due_date, description } = req.body;
+  const { title, due_date, description, repeatDays } = req.body;
 
   try {
-    const result = await pool.query(
-      'INSERT INTO tasks (user_id, title, due_date, description) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, title, due_date, description || null]
-    );
+    if (repeatDays && Array.isArray(repeatDays) && repeatDays.length > 0) {
+      const createdTasks = [];
 
-    res.status(201).json(result.rows[0]);
+      for (const day of repeatDays) {
+        const result = await pool.query(
+          'INSERT INTO tasks (user_id, title, due_date, description, repeat_day) VALUES ($1, $2, NULL, $3, $4) RETURNING *',
+          [userId, title, description || null, day]
+        );
+        createdTasks.push(result.rows[0]);
+      }
+
+      return res.status(201).json(createdTasks);
+    } else {
+      const result = await pool.query(
+        'INSERT INTO tasks (user_id, title, due_date, description) VALUES ($1, $2, $3, $4) RETURNING *',
+        [userId, title, due_date, description || null]
+      );
+
+      return res.status(201).json(result.rows[0]);
+    }
   } catch (err) {
     console.error('Create task error:', err);
     res.status(500).json({ message: 'Error creating task' });
@@ -29,7 +44,36 @@ export const getUserTasks = async (req: Request, res: Response) => {
       [userId]
     );
 
-    res.json(result.rows);
+    const normalTasks = result.rows;
+
+    const repeatResult = await pool.query(
+      'SELECT * FROM tasks WHERE user_id = $1 AND repeat_day IS NOT NULL',
+      [userId]
+    );
+
+    const repeatTasks = repeatResult.rows;
+    const upcomingRepeatTasks = [];
+    const today = moment();
+
+    for (const task of repeatTasks) {
+      for (let i = 0; i < 28; i++) {
+        const date = moment().add(i, 'days');
+        const weekday = date.format('ddd');
+        if (task.repeat_day === weekday) {
+          upcomingRepeatTasks.push({
+            ...task,
+            due_date: date.format('YYYY-MM-DD'),
+            virtual: true,
+          });
+        }
+      }
+    }
+
+    const allTasks = [...normalTasks, ...upcomingRepeatTasks].sort((a, b) => {
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    });
+
+    res.json(allTasks);
   } catch (err) {
     console.error('Get tasks error:', err);
     res.status(500).json({ message: 'Error fetching tasks' });

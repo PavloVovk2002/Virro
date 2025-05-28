@@ -1,12 +1,11 @@
 import { Stack, Tabs } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { AuthProvider } from '../context/AuthContext';
 import AddTaskModal from '@/components/AddTaskModal';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-
+import { Home, PencilLine, CalendarDays, User, Plus } from 'lucide-react-native';
 const PRIMARY_COLOR = '#5D8748';
 
 export default function RootLayout() {
@@ -26,7 +25,7 @@ export default function RootLayout() {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: 100,
+                height: 105,
                 paddingBottom: 8,
                 paddingTop: 8,
                 borderTopWidth: 0.5,
@@ -44,13 +43,12 @@ export default function RootLayout() {
               tabBarShowLabel: false,
               headerShown: false,
             }}
-
           >
             <Tabs.Screen
               name="home/index"
               options={{
-                tabBarIcon: () => (
-                    <Ionicons name="home-outline" size={28} color={PRIMARY_COLOR} />
+                tabBarIcon: ({ color }) => (
+                  <Home size={28} color={PRIMARY_COLOR} style={{ marginBottom: 5 }} strokeWidth={2.5}/>
                 ),
               }}
             />
@@ -58,8 +56,8 @@ export default function RootLayout() {
             <Tabs.Screen
               name="tasks/index"
               options={{
-                tabBarIcon: () => (
-                    <Ionicons name="checkmark-done-outline" size={28} color={PRIMARY_COLOR} />
+                tabBarIcon: ({ color }) => (
+                  <PencilLine size={28} color={PRIMARY_COLOR} style={{ marginBottom: 5 }} strokeWidth={2.5}/>
                 ),
               }}
             />
@@ -72,7 +70,7 @@ export default function RootLayout() {
                     onPress={() => setModalVisible(true)}
                     style={styles.addButton}
                   >
-                    <Ionicons name="add" size={32} color="#fff" />
+                    <Plus size={32} strokeWidth={2.8} color="#fff" />
                   </TouchableOpacity>
                 ),
               }}
@@ -81,8 +79,8 @@ export default function RootLayout() {
             <Tabs.Screen
               name="calendar/index"
               options={{
-                tabBarIcon: () => (
-                    <Ionicons name="calendar-outline" size={28} color={PRIMARY_COLOR} />
+                tabBarIcon: ({ color }) => (
+                  <CalendarDays size={28} color={PRIMARY_COLOR} style={{ marginBottom: 5 }} strokeWidth={2.5}/>
                 ),
               }}
             />
@@ -90,12 +88,23 @@ export default function RootLayout() {
             <Tabs.Screen
               name="profile/index"
               options={{
-                tabBarIcon: () => (
-                    <Ionicons name="person-outline" size={28} color={PRIMARY_COLOR} />
+                tabBarIcon: ({ color }) => (
+                  <User size={28} color={PRIMARY_COLOR} style={{ marginBottom: 5 }} strokeWidth={2.8}/>
                 ),
               }}
             />
           </Tabs>
+
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              style={styles.addButtonContainer}
+            >
+            <View style={styles.outerCircle}>
+              <View style={styles.innerCircle}>
+                <Plus size={28} strokeWidth={2.8} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
 
           <AddTaskModal
             visible={modalVisible}
@@ -109,18 +118,54 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   addButton: {
-    width: 65,
-    height: 65,
-    borderRadius: 32,
-    backgroundColor: PRIMARY_COLOR,
-    justifyContent: 'center',
-    alignItems: 'center',
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: PRIMARY_COLOR,
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'absolute',
+  bottom: 10,
+  alignSelf: 'center',
+  shadowColor: '#000',
+  shadowOpacity: 0.2,
+  shadowRadius: 6,
+  elevation: 8,
+  marginBottom: 5
+},
+  addButtonContainer: {
     position: 'absolute',
     bottom: 10,
     alignSelf: 'center',
+    marginBottom: 5
+
+  },
+
+  outerCircle: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    elevation: 8,
+    elevation: 6,
+    marginBottom: 5
+  },
+
+  innerCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgb(80, 109, 25)',
+    shadowColor: 'rgb(210, 221, 48)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 10, // For Android
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
