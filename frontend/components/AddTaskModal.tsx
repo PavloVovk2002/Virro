@@ -29,7 +29,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
   const [group, setGroup] = useState('');
   const [members, setMembers] = useState('');
   const [verifier, setVerifier] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [repeatDays, setRepeatDays] = useState<string[]>([]);
   const [showRepeatDropdown, setShowRepeatDropdown] = useState(false);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -37,16 +37,34 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const toggleDay = (day: string) => {
-    setRepeatDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
+const toggleDay = (day: string) => {
+  setRepeatDays((prev) => {
+    const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    if (day === 'Daily') {
+      return prev.includes('Daily') || allDays.every(d => prev.includes(d))
+        ? []
+        : ['Daily'];
+    }
+    let updated = prev.includes('Daily') ? [...allDays] : [...prev];
+
+    if (updated.includes(day)) {
+      updated = updated.filter((d) => d !== day);
+    } else {
+      updated.push(day);
+    }
+
+    if (allDays.every(d => updated.includes(d))) {
+      return ['Daily'];
+    }
+
+    return updated;
+  });
+};
 
   const showDatePicker = () => {
     if (!dueDate) {
-      const today = moment().format('ddd, MMM D [at] h:mm A');
-      setDueDate(today);
+      setDueDate(new Date());
     }
     setDatePickerVisible(true);
   };
@@ -56,8 +74,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
   };
 
   const handleConfirmDate = (date: Date) => {
-    const formatted = moment(date).format('ddd, MMM D [at] h:mm A');
-    setDueDate(formatted);
+    setDueDate(date);
     hideDatePicker();
   };
 
@@ -90,7 +107,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
         setGroup(draft.group || '');
         setMembers(draft.members || '');
         setVerifier(draft.verifier || '');
-        setDueDate(draft.dueDate || '');
+        setDueDate(draft.dueDate ? new Date(draft.dueDate) : null); 
         setRepeatDays(draft.repeatDays || []);
       }
     } catch (e) {
@@ -123,7 +140,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
           group,
           members,
           verifier,
-          dueDate,
+          dueDate: dueDate?.toISOString() || null,
           repeatDays,
           completed: false,
         }),
@@ -137,7 +154,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
       setGroup('');
       setMembers('');
       setVerifier('');
-      setDueDate('');
+      dueDate: dueDate ? dueDate.toISOString() : null,
       setRepeatDays([]);
 
       onClose();
@@ -178,7 +195,7 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
               <View style={styles.dateRepeatRow}>
                 <TouchableOpacity style={styles.dueDateButton} onPress={showDatePicker}>
                   <Text style={{ color: dueDate ? '#000' : '#999', fontSize: 18 }}>
-                    {dueDate || 'Select Due Date'}
+                    {dueDate ? moment(dueDate).format('ddd, MMM D [at] h:mm A') : 'Select Due Date'}
                   </Text>
                 </TouchableOpacity>
 
@@ -187,7 +204,11 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
                   onPress={() => setShowRepeatDropdown(!showRepeatDropdown)}
                 >
                   <Text style={styles.repeatButtonText}>
-                    {repeatDays.length > 0 ? `Repeat: ${repeatDays.join(', ')}` : 'Repeat'}
+                    {repeatDays.includes('Daily')
+                      ? 'Repeat: Daily'
+                      : repeatDays.length > 0
+                      ? `Repeat: ${repeatDays.join(', ')}`
+                      : 'Repeat'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -197,21 +218,24 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
                 mode="datetime"
                 onConfirm={handleConfirmDate}
                 onCancel={hideDatePicker}
-                date={dueDate ? new Date(dueDate) : new Date()}
+                date={dueDate || new Date()}
                 minimumDate={todayStart}
               />
 
               {showRepeatDropdown && (
                 <View style={styles.dropdown}>
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                    <TouchableOpacity
-                      key={day}
-                      onPress={() => toggleDay(day)}
-                      style={[styles.dropdownItem, repeatDays.includes(day) && styles.dropdownItemSelected]}
-                    >
-                      <Text style={styles.dropdownItemText}>{day}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  {['Daily', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                    const isSelected = repeatDays.includes(day) || repeatDays.includes('Daily');
+                    return (
+                      <TouchableOpacity
+                        key={day}
+                        onPress={() => toggleDay(day)}
+                        style={[styles.dropdownItem, isSelected && styles.dropdownItemSelected]}
+                      >
+                        <Text style={styles.dropdownItemText}>{day}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               )}
             </ScrollView>
