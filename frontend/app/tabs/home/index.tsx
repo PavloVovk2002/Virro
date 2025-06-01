@@ -1,55 +1,67 @@
+// frontend/app/tabs/home/index.tsx
+
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  TouchableOpacity,
-  Alert,
-  Modal,
-  Pressable,
+  View, Text, StyleSheet, ImageBackground, TouchableOpacity,
+  Alert, Modal, Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts, Baloo2_700Bold } from '@expo-google-fonts/baloo-2';
+import { useTaskContext } from '../../../context/TaskContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useRouter } from 'expo-router';
 
 const background = require('../../../assets/images/appBackground.png');
 
-const dummyTasks = [
-  { id: '1', name: 'Finish wireframes', due: '2025-04-27' },
-  { id: '2', name: 'User testing call', due: '2025-04-29' },
-  { id: '3', name: 'Update designs', due: '2025-05-01' },
-];
-
 export default function HomeScreen() {
-  const [tasks, setTasks] = useState([...dummyTasks]);
+  const { tasks, deleteTask } = useTaskContext();
+  const { logout } = useAuth();
+  const router = useRouter();
+  console.log('📦 Fetched tasks from context:', tasks);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const completedPercent = 80;
-  const remainingTasks = 4;
-  const totalTasks = 17;
-
   const [fontsLoaded] = useFonts({ Baloo2_700Bold });
   if (!fontsLoaded) return null;
 
-  const handleDelete = (rowKey) => {
-    const newData = tasks.filter(task => task.id !== rowKey);
-    setTasks(newData);
+  // Filter tasks due today
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const todayTasks = tasks.filter(task => {
+    const due = new Date(task.due);
+    return due <= today;
+  });
+
+  const completedTasks = todayTasks.filter(t => t.completed).length;
+  const completedPercent = todayTasks.length === 0 ? 0 : (completedTasks / todayTasks.length) * 100;
+  const remainingTasks = todayTasks.length - completedTasks;
+
+  const handleDelete = (rowKey: number) => {
+    deleteTask(Number(rowKey));
   };
 
-  const handleSubmit = (rowKey) => {
+  const handleSubmit = (rowKey: number) => {
     Alert.alert('Submitted', `Task "${rowKey}" submitted for verification.`);
   };
 
-  const getDueLabel = (dueDate) => {
+  const getDueLabel = (dueDate: string) => {
     const due = new Date(dueDate);
-    const today = new Date();
+    const now = new Date();
     due.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    if (due.getTime() === today.getTime()) return 'Due Today';
-    if (due.getTime() < today.getTime()) return 'Past Due';
+    now.setHours(0, 0, 0, 0);
+    if (due.getTime() === now.getTime()) return 'Due Today';
+    if (due.getTime() < now.getTime()) return 'Past Due';
     return 'Due ' + due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+    }
   };
 
   return (
@@ -59,20 +71,28 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.dateText}>{new Date().toLocaleDateString('en-US', {
-                month: 'long', day: 'numeric', year: 'numeric'
-              })}</Text>
+              <Text style={styles.dateText}>
+                {new Date().toLocaleDateString('en-US', {
+                  month: 'long', day: 'numeric', year: 'numeric'
+                })}
+              </Text>
               <Text style={styles.todayTitle}>Today</Text>
             </View>
-            <TouchableOpacity style={styles.menuButton} onPress={() => setDrawerVisible(true)}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => {
+                console.log('📖 Drawer opened');
+                setDrawerVisible(true);
+              }}
+            >
               <Ionicons name="menu-outline" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          {/* Progress Card */}
+          {/* Progress */}
           <View style={styles.topCard}>
             <View style={styles.progressHeader}>
-              <View style={[styles.completedBox, { flex: completedPercent / 100 }]}> 
+              <View style={[styles.completedBox, { flex: completedPercent / 100 || 1 }]}>
                 <Text style={styles.completedText}>Completed</Text>
               </View>
               <AnimatedCircularProgress
@@ -83,47 +103,69 @@ export default function HomeScreen() {
               </AnimatedCircularProgress>
             </View>
             <View style={styles.inProgressBar}>
-              <Text style={styles.inProgressText}>In Progress • Remaining Tasks {remainingTasks}/{totalTasks}</Text>
+              <Text style={styles.inProgressText}>
+                In Progress • Remaining Tasks {remainingTasks}/{todayTasks.length}
+              </Text>
             </View>
           </View>
 
           {/* Tasks */}
           <Text style={styles.sectionTitle}>Tasks</Text>
-
           <View style={styles.bottomCard}>
             <SwipeListView
-              data={tasks} keyExtractor={item => item.id}
+              data={todayTasks}
+              keyExtractor={item => item.id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.taskCard}>
                   <Text style={styles.taskName}>{item.name}</Text>
-                  <Text style={[styles.taskDue,
-                    getDueLabel(item.due) === 'Past Due' && { color: '#000', fontWeight: '700' }]}>
+                  <Text style={[
+                    styles.taskDue,
+                    getDueLabel(item.due) === 'Past Due' && { color: '#000', fontWeight: '700' }
+                  ]}>
                     {getDueLabel(item.due)}
                   </Text>
                 </TouchableOpacity>
               )}
               renderHiddenItem={({ item }) => (
                 <View style={styles.rowBack}>
-                  <TouchableOpacity style={[styles.backLeftBtn, styles.swipeBtnHeight]} onPress={() => handleSubmit(item.name)}>
+                  <TouchableOpacity
+                    style={[styles.backLeftBtn, styles.swipeBtnHeight]}
+                    onPress={() => handleSubmit(item.id)}
+                  >
                     <Ionicons name="checkmark-done" size={24} color="#fff" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.backRightBtn, styles.swipeBtnHeight]} onPress={() => handleDelete(item.id)}>
+                  <TouchableOpacity
+                    style={[styles.backRightBtn, styles.swipeBtnHeight]}
+                    onPress={() => handleDelete(item.id)}
+                  >
                     <Ionicons name="trash" size={24} color="#fff" />
                   </TouchableOpacity>
                 </View>
               )}
-              leftOpenValue={75} rightOpenValue={-75}
+              leftOpenValue={75}
+              rightOpenValue={-75}
             />
           </View>
         </View>
 
         {/* Drawer */}
-        <Modal transparent animationType="fade" visible={drawerVisible} onRequestClose={() => setDrawerVisible(false)}>
+        <Modal
+          transparent
+          animationType="fade"
+          visible={drawerVisible}
+          onRequestClose={() => setDrawerVisible(false)}
+        >
           <Pressable style={styles.overlay} onPress={() => setDrawerVisible(false)}>
             <View style={styles.drawer}>
-              <Text style={styles.drawerItem}>👤 Profile</Text>
-              <Text style={styles.drawerItem}>⚙️ Settings</Text>
-              <Text style={styles.drawerItem}>🚪 Log Out</Text>
+              <TouchableOpacity onPress={() => { setDrawerVisible(false); router.push('/tabs/profile'); }}>
+                <Text style={styles.drawerItem}>👤 Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setDrawerVisible(false); /* Add Settings route if exists */ }}>
+                <Text style={styles.drawerItem}>⚙️ Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleLogout}>
+                <Text style={styles.drawerItem}>🚪 Log Out</Text>
+              </TouchableOpacity>
             </View>
           </Pressable>
         </Modal>

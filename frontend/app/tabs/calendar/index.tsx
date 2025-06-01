@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// frontend/app/tabs/calendar/index.tsx
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts, Baloo2_700Bold } from '@expo-google-fonts/baloo-2';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../../context/AuthContext';  // 🆕 Add this import
 
 const background = require('../../../assets/images/appBackground.png');
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -20,15 +23,20 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function CalendarScreen() {
   const router = useRouter();
+  const { logout } = useAuth();  // 🆕 Use logout function
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedStart, setSelectedStart] = useState<Date | null>(null);
   const [selectedEnd, setSelectedEnd] = useState<Date | null>(null);
-  const [month, setMonth] = useState(new Date().getMonth());
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth());
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [activeTab, setActiveTab] = useState<'All' | 'Schedule' | 'News'>('All');
 
   let [fontsLoaded] = useFonts({ Baloo2_700Bold });
   if (!fontsLoaded) return null;
+
+  useEffect(() => {
+    console.log('✅ CalendarScreen rendered');
+  }, []);
 
   const goToNextMonth = () => {
     if (month === 11) {
@@ -51,11 +59,11 @@ export default function CalendarScreen() {
   const getCalendarMatrix = () => {
     const firstDay = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
-    const matrix = [];
+    const matrix: Date[][] = [];
     let dayCounter = 1 - firstDay;
 
     for (let row = 0; row < 6; row++) {
-      const week = [];
+      const week: Date[] = [];
       for (let col = 0; col < 7; col++) {
         const date = new Date(year, month, dayCounter);
         week.push(date);
@@ -122,7 +130,7 @@ export default function CalendarScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ✅ FIXED Day Labels */}
+        {/* Day Labels */}
         <View style={styles.daysRow}>
           {DAYS.map((day, index) => (
             <Text key={`${day}-${index}`} style={styles.dayLabel}>
@@ -189,13 +197,29 @@ export default function CalendarScreen() {
       </ImageBackground>
 
       {/* Drawer */}
-      <Modal transparent animationType="fade" visible={drawerVisible} onRequestClose={() => setDrawerVisible(false)}>
+      <Modal
+        transparent
+        animationType="fade"
+        visible={drawerVisible}
+        onRequestClose={() => setDrawerVisible(false)}
+      >
         <Pressable style={styles.overlay} onPress={() => setDrawerVisible(false)}>
           <View style={styles.drawer}>
-            <TouchableOpacity onPress={() => { setDrawerVisible(false); router.push('/tabs/profile'); }}>
+            <TouchableOpacity
+              onPress={() => {
+                setDrawerVisible(false);
+                router.push('/tabs/profile');
+              }}
+            >
               <Text style={styles.drawerItem}>👤 Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={async () => {
+                setDrawerVisible(false);
+                await logout();  // 🆕 Logout
+                router.replace('/login');
+              }}
+            >
               <Text style={styles.drawerItem}>🚪 Log Out</Text>
             </TouchableOpacity>
           </View>

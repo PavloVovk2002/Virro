@@ -1,3 +1,5 @@
+// frontend/components/AddTaskModal.tsx
+
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -16,12 +18,21 @@ import { useRouter } from 'expo-router';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { post } from '../api/api';
+import { useAuth } from '../context/AuthContext'; // Added import
 
 const PRIMARY_COLOR = '#5D8748';
 const DRAFT_KEY = 'task_draft';
 
-export default function AddTaskModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export default function AddTaskModal({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
   const router = useRouter();
+  const { token } = useAuth(); // Using useAuth to get token
 
   const [task, setTask] = useState('');
   const [description, setDescription] = useState('');
@@ -37,30 +48,30 @@ export default function AddTaskModal({ visible, onClose }: { visible: boolean; o
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-const toggleDay = (day: string) => {
-  setRepeatDays((prev) => {
-    const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const toggleDay = (day: string) => {
+    setRepeatDays((prev) => {
+      const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    if (day === 'Daily') {
-      return prev.includes('Daily') || allDays.every(d => prev.includes(d))
-        ? []
-        : ['Daily'];
-    }
-    let updated = prev.includes('Daily') ? [...allDays] : [...prev];
+      if (day === 'Daily') {
+        return prev.includes('Daily') || allDays.every((d) => prev.includes(d))
+          ? []
+          : ['Daily'];
+      }
+      let updated = prev.includes('Daily') ? [...allDays] : [...prev];
 
-    if (updated.includes(day)) {
-      updated = updated.filter((d) => d !== day);
-    } else {
-      updated.push(day);
-    }
+      if (updated.includes(day)) {
+        updated = updated.filter((d) => d !== day);
+      } else {
+        updated.push(day);
+      }
 
-    if (allDays.every(d => updated.includes(d))) {
-      return ['Daily'];
-    }
+      if (allDays.every((d) => updated.includes(d))) {
+        return ['Daily'];
+      }
 
-    return updated;
-  });
-};
+      return updated;
+    });
+  };
 
   const showDatePicker = () => {
     if (!dueDate) {
@@ -107,7 +118,7 @@ const toggleDay = (day: string) => {
         setGroup(draft.group || '');
         setMembers(draft.members || '');
         setVerifier(draft.verifier || '');
-        setDueDate(draft.dueDate ? new Date(draft.dueDate) : null); 
+        setDueDate(draft.dueDate ? new Date(draft.dueDate) : null);
         setRepeatDays(draft.repeatDays || []);
       }
     } catch (e) {
@@ -130,37 +141,37 @@ const toggleDay = (day: string) => {
     }
 
     try {
-      await fetch('http://localhost:3001/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: task,
-          description,
-          notes,
-          group,
-          members,
-          verifier,
-          dueDate: dueDate?.toISOString() || null,
-          repeatDays,
-          completed: false,
-        }),
-      });
+      const payload = {
+        title: task,
+        description,
+        notes,
+        group,
+        members,
+        verifier,
+        dueDate: dueDate.toISOString(),
+        repeatDays,
+        completed: false,
+      };
 
-      clearDraft();
+      await post('/tasks', payload, token); // Updated to use post() helper
 
+      await clearDraft();
+
+      // Reset form state
       setTask('');
       setDescription('');
       setNotes('');
       setGroup('');
       setMembers('');
       setVerifier('');
-      dueDate: dueDate ? dueDate.toISOString() : null,
+      setDueDate(null);
       setRepeatDays([]);
 
       onClose();
       router.replace('/tabs/tasks');
     } catch (error) {
       console.error('Error submitting task:', error);
+      Alert.alert('Submission Error', 'Failed to create task. Please try again.');
     }
   };
 
@@ -182,20 +193,55 @@ const toggleDay = (day: string) => {
           style={styles.modalWrapper}
         >
           <Pressable style={styles.modal} onPress={() => {}}>
-            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
               <Text style={styles.title}>Create New Task</Text>
 
-              <TextInput placeholder="Task Name*" value={task} onChangeText={setTask} style={styles.input} />
-              <TextInput placeholder="Description" value={description} onChangeText={setDescription} style={styles.input} />
-              <TextInput placeholder="Additional Notes" value={notes} onChangeText={setNotes} style={styles.input} />
-              <TextInput placeholder="Group Name" value={group} onChangeText={setGroup} style={styles.input} />
-              <TextInput placeholder="Add Members" value={members} onChangeText={setMembers} style={styles.input} />
-              <TextInput placeholder="Verifier" value={verifier} onChangeText={setVerifier} style={styles.input} />
+              <TextInput
+                placeholder="Task Name*"
+                value={task}
+                onChangeText={setTask}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Description"
+                value={description}
+                onChangeText={setDescription}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Additional Notes"
+                value={notes}
+                onChangeText={setNotes}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Group Name"
+                value={group}
+                onChangeText={setGroup}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Add Members"
+                value={members}
+                onChangeText={setMembers}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Verifier"
+                value={verifier}
+                onChangeText={setVerifier}
+                style={styles.input}
+              />
 
               <View style={styles.dateRepeatRow}>
                 <TouchableOpacity style={styles.dueDateButton} onPress={showDatePicker}>
                   <Text style={{ color: dueDate ? '#000' : '#999', fontSize: 18 }}>
-                    {dueDate ? moment(dueDate).format('ddd, MMM D [at] h:mm A') : 'Select Due Date'}
+                    {dueDate
+                      ? moment(dueDate).format('ddd, MMM D [at] h:mm A')
+                      : 'Select Due Date'}
                   </Text>
                 </TouchableOpacity>
 
@@ -225,12 +271,16 @@ const toggleDay = (day: string) => {
               {showRepeatDropdown && (
                 <View style={styles.dropdown}>
                   {['Daily', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
-                    const isSelected = repeatDays.includes(day) || repeatDays.includes('Daily');
+                    const isSelected =
+                      repeatDays.includes(day) || repeatDays.includes('Daily');
                     return (
                       <TouchableOpacity
                         key={day}
                         onPress={() => toggleDay(day)}
-                        style={[styles.dropdownItem, isSelected && styles.dropdownItemSelected]}
+                        style={[
+                          styles.dropdownItem,
+                          isSelected && styles.dropdownItemSelected,
+                        ]}
                       >
                         <Text style={styles.dropdownItemText}>{day}</Text>
                       </TouchableOpacity>

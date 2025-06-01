@@ -1,3 +1,5 @@
+// frontend/app/tabs/profile/index.tsx
+
 import React from 'react';
 import {
   View,
@@ -8,11 +10,13 @@ import {
   TouchableOpacity,
   ScrollView,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const background = require('../../../assets/images/appBackground.png');
 
@@ -20,9 +24,25 @@ export default function ProfileScreen() {
   const { email, role, logout, token } = useAuth();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    router.replace('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+      Alert.alert('Logout Error', 'Failed to log out. Please try again.');
+    }
+  };
+
+  const handleClearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert('Success', 'Storage cleared. You may need to log in again.');
+      router.replace('/login');
+    } catch (error) {
+      console.error('❌ Error clearing storage:', error);
+      Alert.alert('Error', 'Failed to clear storage.');
+    }
   };
 
   return (
@@ -31,7 +51,14 @@ export default function ProfileScreen() {
         <ScrollView contentContainerStyle={styles.container}>
           {/* Header */}
           <View style={styles.headerRow}>
-            <Text style={styles.date}>April 30, 2025</Text>
+            <Text style={styles.date}>
+              {new Date().toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </Text>
+            {/* Placeholder for hamburger if needed */}
             <TouchableOpacity>
               <Ionicons name="menu-outline" size={28} color="#fff" />
             </TouchableOpacity>
@@ -62,7 +89,11 @@ export default function ProfileScreen() {
             <TextInput style={styles.input} placeholder="Smith" placeholderTextColor="#333" />
 
             <Text style={styles.label}>Email</Text>
-            <TextInput style={styles.input} placeholder="johnsmith@gmail.com" placeholderTextColor="#333" />
+            <TextInput
+              style={styles.input}
+              placeholder="johnsmith@gmail.com"
+              placeholderTextColor="#333"
+            />
 
             <Text style={styles.label}>New Password</Text>
             <TextInput style={styles.input} placeholder="••••••••" secureTextEntry />
@@ -78,13 +109,19 @@ export default function ProfileScreen() {
             {/* Color options */}
             <View style={styles.colorRow}>
               {['#5d8748', '#467c8d', '#84487c', '#90503a', '#6e6b2b'].map((color) => (
-                <TouchableOpacity key={color} style={[styles.colorDot, { backgroundColor: color }]} />
+                <TouchableOpacity
+                  key={color}
+                  style={[styles.colorDot, { backgroundColor: color }]}
+                />
               ))}
             </View>
 
             <View style={styles.colorRow}>
               {['#c6d6c2', '#8fabc0', '#b09cb4', '#b38d7c', '#bfbf92'].map((color) => (
-                <TouchableOpacity key={color} style={[styles.colorDot, { backgroundColor: color }]} />
+                <TouchableOpacity
+                  key={color}
+                  style={[styles.colorDot, { backgroundColor: color }]}
+                />
               ))}
             </View>
 
@@ -95,7 +132,7 @@ export default function ProfileScreen() {
               {[1, 2, 3].map((i) => (
                 <TouchableOpacity key={i} style={styles.layoutBox}>
                   <Image
-                    source={{ uri: `https://via.placeholder.com/60x80?i=${i}` }} // ✅ Unique image URIs
+                    source={{ uri: `https://via.placeholder.com/60x80?i=${i}` }}
                     style={styles.layoutImage}
                   />
                 </TouchableOpacity>
@@ -109,6 +146,11 @@ export default function ProfileScreen() {
               <Text style={styles.logoutText}>Log Out</Text>
             </TouchableOpacity>
           )}
+
+          {/* Clear Storage Button */}
+          <TouchableOpacity style={styles.clearStorageButton} onPress={handleClearStorage}>
+            <Text style={styles.clearStorageText}>Clear Storage</Text>
+          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>
@@ -116,34 +158,17 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
+  background: { flex: 1, resizeMode: 'cover' },
+  safeArea: { flex: 1 },
+  container: { paddingHorizontal: 20, paddingBottom: 100 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
   },
-  date: {
-    color: '#fff',
-    fontSize: 14,
-    marginTop: -30,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  date: { color: '#fff', fontSize: 14, marginTop: -30 },
+  title: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 20 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -161,21 +186,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: 12,
   },
-  profileName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  profileRole: {
-    fontSize: 14,
-    color: '#999',
-  },
-  label: {
-    fontSize: 14,
-    color: '#333',
-    marginTop: 12,
-    marginBottom: 4,
-  },
+  profileName: { fontSize: 16, fontWeight: '600', color: '#333' },
+  profileRole: { fontSize: 14, color: '#999' },
+  label: { fontSize: 14, color: '#333', marginTop: 12, marginBottom: 4 },
   input: {
     backgroundColor: '#FFF4C2',
     borderRadius: 12,
@@ -183,27 +196,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: '#333',
   },
-  customTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 12,
-  },
+  customTitle: { fontSize: 16, fontWeight: '700', color: '#333', marginBottom: 12 },
   colorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  colorDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  layoutRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
+  colorDot: { width: 32, height: 32, borderRadius: 16 },
+  layoutRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
   layoutBox: {
     width: 60,
     height: 80,
@@ -212,10 +212,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  layoutImage: {
-    width: 40,
-    height: 60,
-  },
+  layoutImage: { width: 40, height: 60 },
   logoutButton: {
     backgroundColor: '#cc0000',
     paddingVertical: 14,
@@ -225,9 +222,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'center',
   },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  logoutText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  clearStorageButton: {
+    backgroundColor: '#888',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+    alignSelf: 'center',
   },
+  clearStorageText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

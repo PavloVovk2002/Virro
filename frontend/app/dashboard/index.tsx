@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Animated } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import React from 'react';
+import { getAuthToken } from '../../api/api';
+import { API_BASE_URL } from '../../api/config';
 
 type Task = {
   id: number;
-  title: string;
+  name: string;
   completed: boolean;
   user_id?: number;
 };
 
 export default function HomeScreen() {
-  const { userId, token } = useAuth();
+  const { userId } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -25,22 +27,43 @@ export default function HomeScreen() {
       useNativeDriver: true,
     }).start();
   }, []);
-  
+
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:3001/tasks', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const token = await getAuthToken();
+      if (!token) {
+        console.warn('⚠️ No auth token found.');
+        return;
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/tasks`, {
+        method: 'GET',
+        headers,
       });
 
+      if (!response.ok) {
+        console.error(`❌ Failed to fetch tasks: ${response.status}`);
+        return;
+      }
+
       const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        console.error('Unexpected tasks response:', data);
+        return;
+      }
+
       const userTasks = data.filter((task: Task) => task.user_id === userId);
 
       setTasks(userTasks);
-      setCompletedCount(userTasks.filter((task: { completed: any; }) => task.completed).length);
+      setCompletedCount(userTasks.filter((task) => task.completed).length);
     } catch (error) {
-      console.error('Failed to fetch tasks:', error);
+      console.error('🔥 Error fetching tasks:', error);
     }
   };
 
@@ -76,7 +99,7 @@ export default function HomeScreen() {
           data={tasks.filter((task) => task.completed)}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <Text style={styles.taskItem}>• {item.title}</Text>
+            <Text style={styles.taskItem}>• {item.name}</Text>
           )}
           ListEmptyComponent={<Text style={styles.noTasks}>No tasks completed yet.</Text>}
         />
@@ -88,7 +111,7 @@ export default function HomeScreen() {
           data={tasks.filter((task) => !task.completed)}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <Text style={styles.taskItem}>• {item.title}</Text>
+            <Text style={styles.taskItem}>• {item.name}</Text>
           )}
           ListEmptyComponent={<Text style={styles.noTasks}>All caught up!</Text>}
         />

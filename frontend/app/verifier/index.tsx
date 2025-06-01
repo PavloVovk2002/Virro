@@ -1,7 +1,13 @@
-import React from 'react';
+// frontend/app/screens/VerifierScreen.tsx
+
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function VerifierScreen() {
+  useEffect(() => {
+    console.log('✅ VerifierScreen rendered');
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Verifier</Text>

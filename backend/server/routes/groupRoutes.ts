@@ -1,7 +1,9 @@
+//backend/server/groupRoutes.ts
+
 import express from 'express';
-import { createGroupTask, getGroupTasks, updateGroupTask } from '../controllers/groupController.mjs';
-import { authenticate, requireVerifier } from '../middleware/authMiddleware.mjs';
-import { asyncHandler } from '../utils/asyncHandler.mjs';
+import { createGroupTask, getGroupTasks, updateGroupTask } from '../controllers/groupController';
+import { authenticate, requireVerifier } from '../middleware/authMiddleware';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 

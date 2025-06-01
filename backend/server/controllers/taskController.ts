@@ -1,5 +1,7 @@
+//backend/server/taskController.ts
+
 import { Request, Response } from 'express';
-import pool from '../models/db.mjs';
+import pool from '../models/db';
 
 export const createTask = async (req: Request, res: Response) => {
   const userId = req.user?.userId;

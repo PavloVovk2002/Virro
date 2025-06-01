@@ -1,7 +1,4 @@
-/**
- * App-wide color palette for light and dark themes.
- * Use these constants throughout your app for consistency.
- */
+// frontend/Color.ts
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#ffffff';

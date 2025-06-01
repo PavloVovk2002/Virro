@@ -1,5 +1,7 @@
+//backend/server/groupController.ts
+
 import { Request, Response } from 'express';
-import pool from '../models/db.mjs';
+import pool from '../models/db';
 
 export const createGroupTask = async (req: Request, res: Response) => {
   const { group_name, description, due_date } = req.body;

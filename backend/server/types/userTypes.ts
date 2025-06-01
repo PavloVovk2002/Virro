@@ -1,4 +1,4 @@
-// types/userTypes.ts
+//backend/server/types/userTypes.ts
 
 export interface User {
   id: number;

@@ -1,7 +1,9 @@
+//backend/server/verificationRoutes.ts
+
 import express from 'express';
-import { getTasksToVerify, approveTask, rejectTask } from '../controllers/verificationController.mjs';
-import { authenticate, requireVerifier } from '../middleware/authMiddleware.mjs';
-import { asyncHandler } from '../utils/asyncHandler.mjs';
+import { getTasksToVerify, approveTask, rejectTask } from '../controllers/verificationController';
+import { authenticate, requireVerifier } from '../middleware/authMiddleware';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 

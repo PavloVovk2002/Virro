@@ -1,7 +1,9 @@
+//backend/server/routes/taskRoutes.ts
+
 import express from 'express';
-import { createTask, getUserTasks, deleteTask, submitTask } from '../controllers/taskController.mjs';
-import { authenticate } from '../middleware/authMiddleware.js';
-import { asyncHandler } from '../utils/asyncHandler.mjs';
+import { createTask, getUserTasks, deleteTask, submitTask } from '../controllers/taskController';
+import { authenticate } from '../middleware/authMiddleware';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 

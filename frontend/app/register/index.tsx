@@ -1,4 +1,4 @@
-// frontend/app/login/index.tsx
+// frontend/app/register/index.tsx
 
 import React, { useState } from 'react';
 import {
@@ -10,12 +10,12 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useFonts, Baloo2_600SemiBold, Baloo2_700Bold } from '@expo-google-fonts/baloo-2';
 import { useRouter } from 'expo-router';
+import { useFonts, Baloo2_600SemiBold, Baloo2_700Bold } from '@expo-google-fonts/baloo-2';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../api/config';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -35,10 +35,10 @@ export default function LoginScreen() {
     );
   }
 
-  const handleSignIn = async () => {
+  const handleSignUp = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -48,31 +48,30 @@ export default function LoginScreen() {
       setLoading(false);
 
       if (response.ok && data.token) {
-        console.log('✅ Token received:', data.token);
+        console.log('✅ Registration successful, token received:', data.token);
 
+        // Immediately log in the user
         try {
-          // login() should also update userId, role, and email
           await login(data.token);
-          console.log('✅ Token stored and user context updated');
+          console.log('✅ User logged in automatically after registration');
           router.replace('/tabs/home');
         } catch (err) {
-          console.error('❌ Error during login():', err);
-          Alert.alert('Login Error', 'An error occurred while logging in. Please try again.');
+          console.error('❌ Error during login after registration:', err);
+          Alert.alert('Login Error', 'Something went wrong while logging in. Please try again.');
         }
-
       } else {
-        Alert.alert('Login Failed', data.message || 'Login failed. Please check your credentials.');
+        Alert.alert('Registration Failed', data.message || 'Registration failed.');
       }
     } catch (error) {
       setLoading(false);
-      console.error('❌ Login error:', error);
+      console.error('❌ Registration error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again later.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Virro</Text>
+      <Text style={styles.title}>Register</Text>
 
       <TextInput
         style={styles.input}
@@ -93,17 +92,17 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Registering...' : 'Register'}</Text>
       </TouchableOpacity>
 
-      {/* Link to Register Screen */}
+      {/* Link to Login Screen */}
       <TouchableOpacity
-        style={styles.registerLink}
-        onPress={() => router.push('/register')}
+        style={styles.loginLink}
+        onPress={() => router.push('/login')}
       >
-        <Text style={styles.registerLinkText}>
-          Don’t have an account? Register here!
+        <Text style={styles.loginLinkText}>
+          Already have an account? Log in here!
         </Text>
       </TouchableOpacity>
     </View>
@@ -149,10 +148,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  registerLink: {
+  loginLink: {
     marginTop: 16,
   },
-  registerLinkText: {
+  loginLinkText: {
     color: '#2dbd20',
     fontSize: 14,
     fontWeight: '500',

@@ -1,3 +1,5 @@
+//backend/server/utils/jwt.ts
+
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import type { TokenPayload } from '../types/tokenPayload.js';

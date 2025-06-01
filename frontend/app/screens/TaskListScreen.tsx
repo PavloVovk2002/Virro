@@ -1,3 +1,5 @@
+// frontend/app/screens/TaskListScreen.tsx
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -7,15 +9,17 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import SwipeableTask from '../../components/SwipeableTask';
+import { get, del, patch } from '../../api/api'; // ✅ Import patch
+import { API_BASE_URL } from '../../api/config';
 
 type Task = {
   id: number;
-  title: string;
+  name: string;
   description?: string;
-  due_date?: string;
+  due: string;
   completed: boolean;
   verified?: boolean;
   verified_by?: number;
@@ -41,16 +45,12 @@ export default function TaskListScreen() {
 
   const fetchTasks = async () => {
     try {
-      let url = 'http://localhost:3001/tasks';
+      let url = `/tasks`;
       if (role === 'verifier' && viewMode === 'verify') {
-        url = 'http://localhost:3001/verify/pending';
+        url = `/verify/pending`;
       }
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
+      const data = await get(url);
       setTasks(data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -60,19 +60,21 @@ export default function TaskListScreen() {
   };
 
   const handleDelete = async (id: number) => {
-    await fetch(`http://localhost:3001/tasks/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchTasks();
+    try {
+      await del(`/tasks/${id}`);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   };
 
   const handleSubmit = async (id: number) => {
-    await fetch(`http://localhost:3001/tasks/${id}/submit`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchTasks();
+    try {
+      await patch(`/tasks/${id}/submit`, {}); // ✅ Send empty body
+      fetchTasks();
+    } catch (error) {
+      console.error('Error submitting task:', error);
+    }
   };
 
   if (isLoading || loadingTasks) {

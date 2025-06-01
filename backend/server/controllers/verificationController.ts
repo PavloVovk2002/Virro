@@ -1,5 +1,7 @@
+//backend/server/verificationController.ts
+
 import { Request, Response } from 'express';
-import pool from '../models/db.mjs';
+import pool from '../models/db';
 
 export const getTasksToVerify = async (_req: Request, res: Response) => {
   try {
